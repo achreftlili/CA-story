@@ -1,0 +1,26 @@
+{
+  "name": "prstory",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Turn Claude Code transcripts into readable PR stories",
+  "bin": {
+    "prstory": "./bin/prstory.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node ./bin/prstory.js",
+    "test": "node --test test/*.test.js",
+    "test:e2e": "node --test test/e2e/*.test.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "README.md"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "playwright": "^1.45.0"
+  }
+}
