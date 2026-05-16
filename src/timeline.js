@@ -85,6 +85,7 @@ export function buildTimeline(events, opts = {}) {
     git_branch: opts.gitBranch ?? null,
     github_base: opts.githubBase ?? null,
     repo_root: opts.repoRoot ?? null,
+    important_files: opts.importantFiles ?? [],
     chapters,
   };
 }

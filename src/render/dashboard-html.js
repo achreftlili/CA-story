@@ -14,6 +14,9 @@ export function renderDashboardHtml(index, opts = {}) {
     id: s.id,
     project_path: s.project_path,
     project_name: s.project_name,
+    project_description: s.project_description ?? null,
+    project_tags: s.project_tags ?? [],
+    important_files: s.important_files ?? [],
     started_at: s.started_at,
     ended_at: s.ended_at,
     duration_seconds: s.duration_seconds,
@@ -25,6 +28,24 @@ export function renderDashboardHtml(index, opts = {}) {
     first_intervention: s.first_intervention ?? '',
     activity_buckets: s.activity_buckets ?? [],
     tool_calls: s.tool_calls,
+    mcp_tools: s.mcp_tools ?? {},
+    bash_categories: s.bash_categories ?? {},
+    slash_commands: s.slash_commands ?? {},
+    stop_reasons: s.stop_reasons ?? {},
+    max_tokens_count: s.max_tokens_count ?? 0,
+    refusal_count: s.refusal_count ?? 0,
+    skills_used: s.skills_used ?? {},
+    subagents_used: s.subagents_used ?? {},
+    tokens: s.tokens ?? null,
+    models: s.models ?? [],
+    shared: s.shared ?? false,
+    sidechain_messages: s.sidechain_messages ?? 0,
+    tool_failures: s.tool_failures ?? 0,
+    plan_turn_pct: s.plan_turn_pct ?? 0,
+    plan_turns: s.plan_turns ?? 0,
+    turn_duration_ms_avg: s.turn_duration_ms_avg ?? 0,
+    turn_duration_ms_max: s.turn_duration_ms_max ?? 0,
+    turn_count: s.turn_count ?? 0,
     summary: s.summary,
   }));
 
@@ -74,6 +95,8 @@ export function renderDashboardHtml(index, opts = {}) {
       <option value="longest">longest</option>
       <option value="interventions">most interventions</option>
       <option value="files">most files</option>
+      <option value="tokens">most tokens</option>
+      <option value="failures">most failures</option>
     </select>
     <label><input type="checkbox" id="prstory-hasint"> has interventions</label>
     <div class="spacer"></div>

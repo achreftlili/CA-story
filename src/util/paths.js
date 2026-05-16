@@ -2,7 +2,7 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 
 export function claudeProjectsRoot() {
-  return path.join(homedir(), '.claude', 'projects');
+  return process.env.PRSTORY_PROJECTS_ROOT || path.join(homedir(), '.claude', 'projects');
 }
 
 export function cacheRoot() {

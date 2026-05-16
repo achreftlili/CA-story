@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, cp, rm, writeFile, utimes, stat, readFile } from 'node:fs/promises';
+import { mkdtemp, cp, rm, writeFile, utimes, stat, readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir, homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -100,4 +100,40 @@ test('dashboard HTML: embeds JSON payload and escapes </script>', () => {
 test('escape: <script> rendered as &lt;script&gt;', () => {
   assert.equal(escapeHtml("<script>alert('x')</script>"),
     '&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;');
+});
+
+test('dashboard: buildIndex merges shared sessions when repoRoot has .prstory/sessions', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'prstory-merge-'));
+  const projectsRoot = path.join(root, 'projects');
+  await mkdir(projectsRoot, { recursive: true });
+  const repoRoot = path.join(root, 'repo');
+  const sharedDir = path.join(repoRoot, '.prstory', 'sessions');
+  await mkdir(sharedDir, { recursive: true });
+  await cp(path.join(FIX, 'sess-basic.jsonl'), path.join(sharedDir, 'sess-basic.jsonl'));
+  try {
+    const idx = await buildIndex({ projectsRoot, repoRoot });
+    const s = idx.sessions.find((x) => x.id === 'sess-basic');
+    assert.ok(s, 'expected sess-basic in merged index');
+    assert.equal(s.shared, true);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('dashboard: buildIndex dedupes shared sessions when also present locally', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'prstory-dedupe-'));
+  const projectsRoot = path.join(root, 'projects');
+  await cp(FIX, path.join(projectsRoot, '-repo-foo'), { recursive: true });
+  const repoRoot = path.join(root, 'repo');
+  const sharedDir = path.join(repoRoot, '.prstory', 'sessions');
+  await mkdir(sharedDir, { recursive: true });
+  await cp(path.join(FIX, 'sess-basic.jsonl'), path.join(sharedDir, 'sess-basic.jsonl'));
+  try {
+    const idx = await buildIndex({ projectsRoot, repoRoot });
+    const matches = idx.sessions.filter((x) => x.id === 'sess-basic');
+    assert.equal(matches.length, 1, 'expected exactly one sess-basic after dedupe');
+    assert.equal(matches[0].shared, false, 'local copy should win');
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

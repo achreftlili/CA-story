@@ -3,6 +3,32 @@ import { BASE_CSS } from './templates/base.css.js';
 import { projectNameFromCwd } from '../util/paths.js';
 import { diffLines, collapseContext } from '../util/diff.js';
 import { githubBlobUrl } from '../util/git.js';
+import { compileGlobs } from '../util/claude-md.js';
+
+function fmtTokens(n) {
+  n = +n || 0;
+  if (n === 0) return '—';
+  if (n < 1000) return String(n);
+  if (n < 1e6) return (n / 1000).toFixed(n < 10000 ? 1 : 0) + 'k';
+  return (n / 1e6).toFixed(1) + 'M';
+}
+
+function renderToolsHeader(toolCalls) {
+  return renderChipMap(toolCalls, 'tool-chip', 8);
+}
+
+function renderChipMap(map, cls, limit = 6) {
+  if (!map) return '';
+  const entries = Object.entries(map)
+    .filter(([, n]) => n > 0)
+    .sort((a, b) => b[1] - a[1]);
+  if (!entries.length) return '';
+  const chips = entries
+    .slice(0, limit)
+    .map(([name, n]) => `<span class="${cls}">${escapeHtml(name)} <b>${n}</b></span>`)
+    .join('');
+  return `<span class="chip-row">${chips}</span>`;
+}
 
 /**
  * Render a per-session timeline as a standalone HTML document or a
@@ -12,13 +38,22 @@ import { githubBlobUrl } from '../util/git.js';
  */
 export function renderSessionHtml(timeline, opts = {}) {
   const meta = opts.meta ?? {};
-  const projectName = projectNameFromCwd(meta.cwdGuess ?? meta.projectDir ?? '');
+  const projectName = meta.displayName || projectNameFromCwd(meta.cwdGuess ?? meta.projectDir ?? '');
   const startedAt = timeline.chapters[0]?.started_at ?? '';
   const endedAt = timeline.chapters[timeline.chapters.length - 1]?.ended_at ?? '';
   const branch = timeline.git_branch ?? null;
   const branchPill = branch
     ? `<span class="branch-pill" title="git branch when session was active">⎇ ${escapeHtml(branch)}</span>`
     : '';
+  const tokenStats = meta.tokens
+    ? `<span class="stats">${fmtTokens(meta.tokens.billable)} tok billable · in ${(meta.tokens.input||0).toLocaleString()} · out ${(meta.tokens.output||0).toLocaleString()} · cache ${((meta.tokens.cache_read||0)+(meta.tokens.cache_creation||0)).toLocaleString()}</span>`
+    : '';
+  const toolsStats = renderToolsHeader(meta.toolCalls);
+  const skillsStats = renderChipMap(meta.skillsUsed, 'skill-chip');
+  const subagentsStats = renderChipMap(meta.subagentsUsed, 'agent-chip');
+  const mcpStats = renderChipMap(meta.mcpTools, 'mcp-chip', 6);
+  const bashCatStats = renderChipMap(meta.bashCategories, 'bash-chip', 8);
+  const slashStats = renderChipMap(meta.slashCommands, 'slash-chip', 6);
 
   const body = renderTimelineBody(timeline, { branch });
 
@@ -37,6 +72,13 @@ export function renderSessionHtml(timeline, opts = {}) {
   <h1>${escapeHtml(projectName)} — session</h1>
   ${branchPill}
   <span class="stats">${escapeHtml(timeline.session_id)} · ${escapeHtml(startedAt)} → ${escapeHtml(endedAt)}</span>
+  ${tokenStats}
+  ${toolsStats}
+  ${bashCatStats}
+  ${mcpStats}
+  ${subagentsStats}
+  ${skillsStats}
+  ${slashStats}
 </header>
 <main>
 ${body}
@@ -51,10 +93,12 @@ export function renderTimelineBody(timeline, opts = {}) {
     return `<div class="empty">No events extracted from this session.</div>`;
   }
   const branch = opts.branch ?? timeline.git_branch ?? null;
+  const isHot = compileGlobs(timeline.important_files ?? []);
   const ctx = {
     branch,
     github_base: timeline.github_base ?? null,
     repo_root: timeline.repo_root ?? null,
+    isHot,
   };
   const branchHeader = renderBranchHeader(branch, ctx);
   return [
@@ -92,7 +136,11 @@ function renderFileSummary(timeline, ctx) {
   const rows = [...counts.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 12)
-    .map(([fp, n]) => `<tr><td class="path">${renderPathLink(fp, ctx)}</td><td class="count">${n}</td></tr>`)
+    .map(([fp, n]) => {
+      const hot = ctx?.isHot?.(fp, ctx.repo_root) ? ' hot' : '';
+      const tag = hot ? '<span class="hot-tag" title="marked important in CLAUDE.md">★</span> ' : '';
+      return `<tr class="${hot.trim()}"><td class="path">${tag}${renderPathLink(fp, ctx)}</td><td class="count">${n}</td></tr>`;
+    })
     .join('');
   return `
 <div class="file-summary">
@@ -195,13 +243,49 @@ function decisionOrigin(decision) {
 
 function renderActionLi(a, ctx) {
   const summary = renderActionSummary(a, ctx);
+  const tokens = renderTurnTokens(a);
   const diff = renderActionDiff(a);
   const outcome = a._outcome
     ? `<div class="action-outcome${a._outcome.meta?.is_error ? ' error' : ''}">${escapeHtml(
         a._outcome.raw_text.slice(0, 300),
       )}</div>`
     : '';
-  return `<li class="action">${summary}${diff}${outcome}</li>`;
+  const tool = a.meta?.tool_name ?? '';
+  const dataAttrs = [
+    `data-tool="${escapeHtml(tool)}"`,
+    a.meta?.file_path ? `data-file="${escapeHtml(a.meta.file_path)}"` : '',
+    tool === 'Bash' && typeof a.meta?.command === 'string' ? `data-bashcat="${escapeHtml(bashCategoryHint(a.meta.command))}"` : '',
+    tool && tool.startsWith('mcp__') ? `data-mcp="${escapeHtml(shortenMcpName(tool))}"` : '',
+  ].filter(Boolean).join(' ');
+  return `<li class="action" ${dataAttrs}>${summary}${tokens}${diff}${outcome}</li>`;
+}
+
+function shortenMcpName(name) {
+  const m = String(name).match(/^mcp__([^_]+(?:_[^_]+)*?)__(.+)$/);
+  if (!m) return name.replace(/^mcp__/, '');
+  const server = m[1].replace(/^claude_ai_/, '').replace(/_/g, ' ').trim();
+  return `${server} · ${m[2]}`;
+}
+
+const BASH_HINT = [
+  ['git', /\bgit\b/], ['test', /\b(npm\s+(?:run\s+)?test|pytest|vitest|jest|go\s+test|cargo\s+test)\b/i],
+  ['install', /\b(npm\s+(?:install|i)\b|yarn\s+add\b|pip\s+install\b|brew\s+install\b)/i],
+  ['build', /\b(npm\s+(?:run\s+)?build|tsc\b|vite\s+build|webpack|cargo\s+build|docker\s+build|make\b)\b/i],
+  ['lint', /\b(eslint|ruff|flake8|prettier|black)\b/i], ['docker', /\bdocker\b/],
+  ['find', /\b(find|grep|rg|ag|fd)\b/], ['ls/cat', /^\s*(ls|cat|head|tail|less|more|wc|stat|file)\b/],
+  ['curl', /\b(curl|wget)\b/], ['node', /\bnode\b/], ['python', /\b(python|python3|uvx?|poetry)\b/],
+];
+function bashCategoryHint(cmd) {
+  const c = String(cmd || '').trim();
+  for (const [k, rx] of BASH_HINT) if (rx.test(c)) return k;
+  return 'other';
+}
+
+function renderTurnTokens(a) {
+  const t = a.meta?.turn_tokens;
+  if (!t) return '';
+  const tip = `turn tokens · in: ${(t.input||0).toLocaleString()} · out: ${(t.output||0).toLocaleString()} · cache_read: ${(t.cache_read||0).toLocaleString()} · cache_create: ${(t.cache_creation||0).toLocaleString()} · billable: ${(t.billable||0).toLocaleString()}`;
+  return ` <span class="turn-tok" title="${escapeHtml(tip)}">⛁ ${escapeHtml(fmtTokens(t.billable))}</span>`;
 }
 
 function renderActionSummary(a, ctx) {
