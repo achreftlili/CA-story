@@ -5,13 +5,13 @@
   "description": "Turn Claude Code transcripts into readable PR stories — locally and offline.",
   "license": "MIT",
   "author": "achreftlili",
-  "homepage": "https://github.com/achreftlili/CA-story#readme",
+  "homepage": "https://github.com/achreftlili/coding-agent-story#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/achreftlili/CA-story.git"
+    "url": "git+https://github.com/achreftlili/coding-agent-story.git"
   },
   "bugs": {
-    "url": "https://github.com/achreftlili/CA-story/issues"
+    "url": "https://github.com/achreftlili/coding-agent-story/issues"
   },
   "keywords": [
     "claude-code",

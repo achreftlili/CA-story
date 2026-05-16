@@ -31,7 +31,7 @@ Requires Node ≥ 20.
 For development against the source tree, use `npm link`:
 
 ```sh
-git clone https://github.com/achreftlili/CA-story.git coding-agent-story && cd coding-agent-story
+git clone https://github.com/achreftlili/coding-agent-story.git && cd coding-agent-story
 npm link    # `coding-agent-story` now resolves to your working copy
 ```
 
