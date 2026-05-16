@@ -1,0 +1,2 @@
+{"parentUuid":null,"type":"user","message":{"role":"user","content":"add <script>alert('xss')</script> support"},"uuid":"u1","timestamp":"2026-05-10T13:00:00.000Z","cwd":"/repo/foo","sessionId":"sess-xss","gitBranch":"main"}
+{"parentUuid":"u1","type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"I'll <b>not</b> add real XSS. Let me sanitize instead."}]},"uuid":"a1","timestamp":"2026-05-10T13:00:01.000Z","cwd":"/repo/foo","sessionId":"sess-xss","gitBranch":"main"}
