@@ -90,7 +90,7 @@ export async function startServer(opts) {
       res.end('Not found');
     } catch (err) {
       res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end(`prstory error: ${err.message}`);
+      res.end(`castory error: ${err.message}`);
     }
   });
 

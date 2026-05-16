@@ -11,7 +11,7 @@ import { escapeHtml } from '../src/util/escape.js';
 const FIX = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures');
 
 async function setupTempProjects() {
-  const root = await mkdtemp(path.join(tmpdir(), 'prstory-test-'));
+  const root = await mkdtemp(path.join(tmpdir(), 'castory-test-'));
   const projectDir = path.join(root, '-repo-foo');
   await cp(FIX, projectDir, { recursive: true });
   return root;
@@ -93,7 +93,7 @@ test('dashboard HTML: embeds JSON payload and escapes </script>', () => {
       summary: 'hi',
     }],
   }, {});
-  assert.match(html, /<script type="application\/json" id="prstory-data">/);
+  assert.match(html, /<script type="application\/json" id="castory-data">/);
   assert.equal(html.includes('</script><script>alert(1)</script>'), false, 'must escape host </script>');
 });
 
@@ -102,12 +102,12 @@ test('escape: <script> rendered as &lt;script&gt;', () => {
     '&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;');
 });
 
-test('dashboard: buildIndex merges shared sessions when repoRoot has .prstory/sessions', async () => {
-  const root = await mkdtemp(path.join(tmpdir(), 'prstory-merge-'));
+test('dashboard: buildIndex merges shared sessions when repoRoot has .castory/sessions', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'castory-merge-'));
   const projectsRoot = path.join(root, 'projects');
   await mkdir(projectsRoot, { recursive: true });
   const repoRoot = path.join(root, 'repo');
-  const sharedDir = path.join(repoRoot, '.prstory', 'sessions');
+  const sharedDir = path.join(repoRoot, '.castory', 'sessions');
   await mkdir(sharedDir, { recursive: true });
   await cp(path.join(FIX, 'sess-basic.jsonl'), path.join(sharedDir, 'sess-basic.jsonl'));
   try {
@@ -121,11 +121,11 @@ test('dashboard: buildIndex merges shared sessions when repoRoot has .prstory/se
 });
 
 test('dashboard: buildIndex dedupes shared sessions when also present locally', async () => {
-  const root = await mkdtemp(path.join(tmpdir(), 'prstory-dedupe-'));
+  const root = await mkdtemp(path.join(tmpdir(), 'castory-dedupe-'));
   const projectsRoot = path.join(root, 'projects');
   await cp(FIX, path.join(projectsRoot, '-repo-foo'), { recursive: true });
   const repoRoot = path.join(root, 'repo');
-  const sharedDir = path.join(repoRoot, '.prstory', 'sessions');
+  const sharedDir = path.join(repoRoot, '.castory', 'sessions');
   await mkdir(sharedDir, { recursive: true });
   await cp(path.join(FIX, 'sess-basic.jsonl'), path.join(sharedDir, 'sess-basic.jsonl'));
   try {

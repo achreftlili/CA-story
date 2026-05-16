@@ -4,7 +4,7 @@ import path from 'node:path';
 /**
  * Read a project's CLAUDE.md (if any) and return a small config object.
  * Recognised inputs:
- *  - explicit `<!-- prstory:config … -->` block with a tiny key:value
+ *  - explicit `<!-- castory:config … -->` block with a tiny key:value
  *    flavour of YAML (supports flat keys + list values, no nesting)
  *  - implicit fallback: H1 → display_name, first paragraph → description
  *
@@ -43,9 +43,9 @@ export function parseClaudeMd(text) {
   return Object.keys(out).length ? out : null;
 }
 
-// Extract and parse the prstory:config HTML-comment block.
+// Extract and parse the castory:config HTML-comment block.
 function parseConfigBlock(text) {
-  const m = text.match(/<!--\s*prstory:config\s*([\s\S]*?)-->/i);
+  const m = text.match(/<!--\s*castory:config\s*([\s\S]*?)-->/i);
   if (!m) return null;
   const body = m[1].trim();
   const out = {};

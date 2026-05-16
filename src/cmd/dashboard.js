@@ -16,10 +16,10 @@ import { findRepoRoot } from '../util/git.js';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const HELP = `prstory dashboard — build and view the cross-session dashboard
+const HELP = `castory dashboard — build and view the cross-session dashboard
 
 Usage:
-  prstory dashboard [--out PATH] [--serve] [--port N] [--projects A,B]
+  castory dashboard [--out PATH] [--serve] [--port N] [--projects A,B]
 
 Options:
   --out PATH       Write index HTML to PATH and exit; do not open browser
@@ -54,11 +54,11 @@ export async function run(argv) {
   if (values.serve) {
     const port = values.port ? Number(values.port) : 7842;
     const srv = await startServer({ projectsRoot, projectPaths, repoRoot, port });
-    process.stdout.write(`prstory: serving at ${srv.url}\n`);
+    process.stdout.write(`castory: serving at ${srv.url}\n`);
     if (!values['no-open']) await openInBrowser(srv.url);
     await new Promise((resolve) => {
       const handler = () => {
-        process.stdout.write('\nprstory: shutting down...\n');
+        process.stdout.write('\ncastory: shutting down...\n');
         srv.close().then(resolve);
       };
       process.on('SIGINT', handler);
@@ -113,7 +113,7 @@ export async function run(argv) {
       });
       await writeFile(path.join(sessionsDir, `${s.id}.html`), standalone, 'utf8');
     } catch (err) {
-      process.stderr.write(`prstory: skipping fragment for ${s.id}: ${err.message}\n`);
+      process.stderr.write(`castory: skipping fragment for ${s.id}: ${err.message}\n`);
     }
   }
 

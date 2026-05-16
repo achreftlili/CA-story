@@ -4,10 +4,10 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
 
-const USAGE = `prstory ${pkg.version}
+const USAGE = `castory ${pkg.version}
 
 Usage:
-  prstory <command> [options]
+  castory <command> [options]
 
 Commands:
   list                          Discovered sessions across all projects
@@ -21,7 +21,7 @@ Common options:
   --help, -h                    Print help (works per subcommand too)
   --version, -v                 Print version
 
-Run 'prstory <command> --help' for command-specific options.
+Run 'castory <command> --help' for command-specific options.
 `;
 
 export async function main(argv) {
@@ -55,7 +55,7 @@ export async function main(argv) {
     case 'dashboard':
       return (await import('./cmd/dashboard.js')).run(rest);
     default:
-      process.stderr.write(`prstory: unknown command '${first}'\n\n${USAGE}`);
+      process.stderr.write(`castory: unknown command '${first}'\n\n${USAGE}`);
       return 2;
   }
 }

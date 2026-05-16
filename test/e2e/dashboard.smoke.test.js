@@ -22,7 +22,7 @@ try {
 
 test('e2e: dashboard loads, has no console errors, filters work', { skip: !chromium }, async () => {
   if (!chromium) return;
-  const root = await mkdtemp(path.join(tmpdir(), 'prstory-e2e-'));
+  const root = await mkdtemp(path.join(tmpdir(), 'castory-e2e-'));
   const projectDir = path.join(root, '-repo-foo');
   await cp(FIX, projectDir, { recursive: true });
 
@@ -52,28 +52,28 @@ test('e2e: dashboard loads, has no console errors, filters work', { skip: !chrom
   await page.route('https://**', (route) => { networkAttempts++; route.abort(); });
 
   await page.goto(pathToFileURL(htmlPath).toString());
-  await page.waitForSelector('#prstory-list .session-row');
+  await page.waitForSelector('#castory-list .session-row');
 
-  const baselineCount = await page.locator('#prstory-list .session-row').count();
+  const baselineCount = await page.locator('#castory-list .session-row').count();
   assert.ok(baselineCount >= 4, `baseline session count too low: ${baselineCount}`);
 
-  await page.fill('#prstory-search', 'healthcheck');
+  await page.fill('#castory-search', 'healthcheck');
   // Allow debounce to fire.
   await page.waitForTimeout(150);
-  const filtered = await page.locator('#prstory-list .session-row').count();
+  const filtered = await page.locator('#castory-list .session-row').count();
   assert.ok(filtered <= baselineCount, 'filtering should not increase row count');
   assert.ok(filtered >= 1, 'filtering should keep matching rows');
 
-  await page.fill('#prstory-search', '');
+  await page.fill('#castory-search', '');
   await page.waitForTimeout(150);
 
   // Click a row to expand inline detail. Wait for the .session-detail to
   // get its data-loaded flag flipped before reading content.
-  const firstRow = page.locator('#prstory-list .session-row').first();
+  const firstRow = page.locator('#castory-list .session-row').first();
   await firstRow.locator('summary').click();
   await page.waitForFunction(
     () => {
-      const row = document.querySelector('#prstory-list .session-row');
+      const row = document.querySelector('#castory-list .session-row');
       const pane = row && row.querySelector('.session-detail');
       return pane && pane.dataset.loaded === '1';
     },

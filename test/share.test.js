@@ -21,7 +21,7 @@ function git(cwd, args) {
 }
 
 async function setupRepo() {
-  const root = await mkdtemp(path.join(tmpdir(), 'prstory-share-'));
+  const root = await mkdtemp(path.join(tmpdir(), 'castory-share-'));
   const projectsRoot = path.join(root, 'projects');
   const repoRoot = path.join(root, 'repo');
   await mkdir(repoRoot, { recursive: true });
@@ -45,11 +45,11 @@ function muteStdout() {
 }
 
 function withProjectsRoot(p) {
-  const prev = process.env.PRSTORY_PROJECTS_ROOT;
-  process.env.PRSTORY_PROJECTS_ROOT = p;
+  const prev = process.env.CASTORY_PROJECTS_ROOT;
+  process.env.CASTORY_PROJECTS_ROOT = p;
   return () => {
-    if (prev === undefined) delete process.env.PRSTORY_PROJECTS_ROOT;
-    else process.env.PRSTORY_PROJECTS_ROOT = prev;
+    if (prev === undefined) delete process.env.CASTORY_PROJECTS_ROOT;
+    else process.env.CASTORY_PROJECTS_ROOT = prev;
   };
 }
 
@@ -61,9 +61,9 @@ test('share: copies branch sessions and writes manifest + commits', async () => 
     const code = await shareRun(['--branch', 'feat/healthcheck', '--repo', repoRoot]);
     assert.equal(code, 0);
 
-    await access(path.join(repoRoot, '.prstory', 'sessions', 'sess-basic.jsonl'));
+    await access(path.join(repoRoot, '.castory', 'sessions', 'sess-basic.jsonl'));
     const manifest = JSON.parse(
-      await readFile(path.join(repoRoot, '.prstory', 'manifest.json'), 'utf8'),
+      await readFile(path.join(repoRoot, '.castory', 'manifest.json'), 'utf8'),
     );
     assert.equal(manifest.version, 1);
     assert.ok(manifest.branches['feat/healthcheck']);
@@ -71,7 +71,7 @@ test('share: copies branch sessions and writes manifest + commits', async () => 
 
     const log = await git(repoRoot, ['log', '--oneline']);
     assert.equal(log.code, 0);
-    assert.match(log.out, /chore\(prstory\): share \d+ session\(s\) for feat\/healthcheck/);
+    assert.match(log.out, /chore\(castory\): share \d+ session\(s\) for feat\/healthcheck/);
   } finally {
     restoreOut();
     restoreEnv();
@@ -87,14 +87,14 @@ test('share: --no-commit stages but does not commit', async () => {
     const code = await shareRun(['--branch', 'feat/healthcheck', '--repo', repoRoot, '--no-commit']);
     assert.equal(code, 0);
 
-    await access(path.join(repoRoot, '.prstory', 'sessions', 'sess-basic.jsonl'));
+    await access(path.join(repoRoot, '.castory', 'sessions', 'sess-basic.jsonl'));
     const log = await git(repoRoot, ['log', '--oneline']);
     assert.notEqual(log.code, 0, 'expected `git log` to fail — no commits yet');
 
     const staged = await git(repoRoot, ['diff', '--cached', '--name-only']);
     assert.equal(staged.code, 0);
-    assert.match(staged.out, /\.prstory\/sessions\/sess-basic\.jsonl/);
-    assert.match(staged.out, /\.prstory\/manifest\.json/);
+    assert.match(staged.out, /\.castory\/sessions\/sess-basic\.jsonl/);
+    assert.match(staged.out, /\.castory\/manifest\.json/);
   } finally {
     restoreOut();
     restoreEnv();
@@ -111,8 +111,8 @@ test('share: --dry-run writes nothing', async () => {
     assert.equal(code, 0);
 
     let exists = false;
-    try { await access(path.join(repoRoot, '.prstory')); exists = true; } catch {}
-    assert.equal(exists, false, '.prstory must not exist after --dry-run');
+    try { await access(path.join(repoRoot, '.castory')); exists = true; } catch {}
+    assert.equal(exists, false, '.castory must not exist after --dry-run');
   } finally {
     restoreOut();
     restoreEnv();
@@ -121,7 +121,7 @@ test('share: --dry-run writes nothing', async () => {
 });
 
 test('share: fails clearly when not in a git repo', async () => {
-  const root = await mkdtemp(path.join(tmpdir(), 'prstory-share-nogit-'));
+  const root = await mkdtemp(path.join(tmpdir(), 'castory-share-nogit-'));
   const restoreOut = (() => {
     const orig = process.stderr.write.bind(process.stderr);
     process.stderr.write = () => true;

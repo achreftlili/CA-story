@@ -9,7 +9,7 @@ import { listAllSessions, findSessionById, peekSessionHeader, findBranchSessions
 const FIX = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures');
 
 async function setup() {
-  const root = await mkdtemp(path.join(tmpdir(), 'prstory-disc-'));
+  const root = await mkdtemp(path.join(tmpdir(), 'castory-disc-'));
   const projectDir = path.join(root, '-repo-foo');
   await cp(FIX, projectDir, { recursive: true });
   return root;
@@ -64,9 +64,9 @@ test('discover: findBranchSessions returns sessions matching branch when no git 
   }
 });
 
-test('discover: listSharedSessions enumerates .prstory/sessions', async () => {
-  const root = await mkdtemp(path.join(tmpdir(), 'prstory-shared-'));
-  const sharedDir = path.join(root, '.prstory', 'sessions');
+test('discover: listSharedSessions enumerates .castory/sessions', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'castory-shared-'));
+  const sharedDir = path.join(root, '.castory', 'sessions');
   await mkdir(sharedDir, { recursive: true });
   await cp(path.join(FIX, 'sess-basic.jsonl'), path.join(sharedDir, 'sess-basic.jsonl'));
   await cp(path.join(FIX, 'sess-fork.jsonl'), path.join(sharedDir, 'sess-fork.jsonl'));
@@ -90,8 +90,8 @@ test('discover: listSharedSessions enumerates .prstory/sessions', async () => {
   }
 });
 
-test('discover: listSharedSessions yields nothing when .prstory/sessions missing', async () => {
-  const root = await mkdtemp(path.join(tmpdir(), 'prstory-shared-empty-'));
+test('discover: listSharedSessions yields nothing when .castory/sessions missing', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'castory-shared-empty-'));
   try {
     const seen = [];
     for await (const s of listSharedSessions(root)) seen.push(s);

@@ -2,12 +2,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseClaudeMd, compileGlobs } from '../src/util/claude-md.js';
 
-test('claude-md: parses explicit prstory:config block', () => {
+test('claude-md: parses explicit castory:config block', () => {
   const text = `# Hi
 hello world.
 
-<!-- prstory:config
-display_name: prstory
+<!-- castory:config
+display_name: castory
 description: Local CLI for PR stories
 base_branch: master
 important_files:
@@ -16,7 +16,7 @@ important_files:
 tags: [tooling, review]
 -->`;
   const cfg = parseClaudeMd(text);
-  assert.equal(cfg.display_name, 'prstory');
+  assert.equal(cfg.display_name, 'castory');
   assert.equal(cfg.description, 'Local CLI for PR stories');
   assert.equal(cfg.base_branch, 'master');
   assert.deepEqual(cfg.important_files, ['src/extract.js', 'src/render/**']);
@@ -31,7 +31,7 @@ test('claude-md: falls back to H1 + first paragraph when no config block', () =>
 });
 
 test('claude-md: explicit fields override H1', () => {
-  const text = `# Old Name\n\n<!-- prstory:config\ndisplay_name: New Name\n-->`;
+  const text = `# Old Name\n\n<!-- castory:config\ndisplay_name: New Name\n-->`;
   const cfg = parseClaudeMd(text);
   assert.equal(cfg.display_name, 'New Name');
 });

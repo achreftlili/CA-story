@@ -22,13 +22,13 @@ export const BASE_CSS = `
   }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  header.prstory-header {
+  header.castory-header {
     padding: 18px 24px; border-bottom: 1px solid var(--border);
     display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: baseline;
     background: var(--panel); position: sticky; top: 0; z-index: 5;
   }
-  header.prstory-header h1 { margin: 0; font-size: 18px; letter-spacing: 0.2px; }
-  header.prstory-header .stats { color: var(--muted); font-size: 12px; }
+  header.castory-header h1 { margin: 0; font-size: 18px; letter-spacing: 0.2px; }
+  header.castory-header .stats { color: var(--muted); font-size: 12px; }
   main { max-width: 1180px; margin: 0 auto; padding: 18px 24px 80px; }
   .toolbar {
     display: flex; flex-wrap: wrap; gap: 8px; align-items: center;

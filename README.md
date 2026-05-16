@@ -1,8 +1,8 @@
-# prstory
+# Coding Agent Story
 
 Turn Claude Code transcripts into readable PR stories — locally.
 
-`prstory` reads the JSONL transcripts that Claude Code already writes to
+`castory` reads the JSONL transcripts that Claude Code already writes to
 `~/.claude/projects/` and renders three views over them:
 
 - **dashboard** — every session you've ever run, filterable & searchable
@@ -15,13 +15,13 @@ All processing happens on your machine. There are **no network calls** and
 ## Install
 
 ```sh
-npm install -g prstory
+npm install -g castory
 ```
 
 Or run with no install:
 
 ```sh
-npx prstory@latest dashboard
+npx castory@latest dashboard
 ```
 
 Requires Node ≥ 20.
@@ -29,31 +29,31 @@ Requires Node ≥ 20.
 For development against the source tree, use `npm link`:
 
 ```sh
-git clone https://github.com/achreftlili/PR-story.git prstory && cd prstory
-npm link    # `prstory` now resolves to your working copy
+git clone https://github.com/achreftlili/CA-story.git castory && cd castory
+npm link    # `castory` now resolves to your working copy
 ```
 
 ## Quick start
 
 ```sh
-prstory dashboard           # build + open in your browser
-prstory list                # plain-text list of every session
-prstory session <id>        # render a single session as HTML
-prstory pr --branch foo     # consolidate sessions on a branch into a PR
-prstory share               # commit this branch's sessions for reviewers
-prstory dashboard --serve   # local server with 30s auto-refresh
+castory dashboard           # build + open in your browser
+castory list                # plain-text list of every session
+castory session <id>        # render a single session as HTML
+castory pr --branch foo     # consolidate sessions on a branch into a PR
+castory share               # commit this branch's sessions for reviewers
+castory dashboard --serve   # local server with 30s auto-refresh
 ```
 
 ## Share sessions with reviewers
 
-When you open a PR, reviewers usually only see the diff. With `prstory share`
+When you open a PR, reviewers usually only see the diff. With `castory share`
 you can commit the Claude sessions that produced the diff to the branch, so
 anyone reviewing can replay the work locally:
 
 ```sh
 # On the author's machine, with the feature branch checked out:
-prstory share              # copies branch sessions → .prstory/sessions/<id>.jsonl
-                           # writes .prstory/manifest.json
+castory share              # copies branch sessions → .castory/sessions/<id>.jsonl
+                           # writes .castory/manifest.json
                            # stages + commits the files
 git push
 ```
@@ -61,7 +61,7 @@ git push
 Then on the reviewer's machine, after pulling the branch:
 
 ```sh
-prstory dashboard          # auto-discovers .prstory/sessions in the repo
+castory dashboard          # auto-discovers .castory/sessions in the repo
                            # branch sessions show up with a "shared" badge
 ```
 
@@ -79,21 +79,21 @@ Useful flags:
 
 | Command                              | What it does                                         |
 |--------------------------------------|------------------------------------------------------|
-| `prstory list`                       | Print discovered sessions across all projects        |
-| `prstory list --json`                | Same, machine-readable                               |
-| `prstory session <id>`               | Render one session as HTML to stdout                 |
-| `prstory session <id> --out PATH`    | Write HTML to `PATH`                                 |
-| `prstory pr --branch <name>`         | Consolidate sessions on a branch into PR markdown    |
-| `prstory pr --branch foo --repo .`   | Look in a specific repo for the branch's commits     |
-| `prstory share`                      | Commit this branch's sessions to `.prstory/` for reviewers |
-| `prstory share --no-commit`          | Stage the files but let the user commit              |
-| `prstory share --dry-run`            | Print what would happen, write nothing               |
-| `prstory dashboard`                  | Build the dashboard and open it in your browser      |
-| `prstory dashboard --out PATH`       | Write the dashboard HTML to `PATH`, don't open       |
-| `prstory dashboard --serve`          | Start a local server with auto-refresh               |
-| `prstory dashboard --serve --port N` | Start the server on a specific port (auto-increments if busy) |
-| `prstory dashboard --projects A,B`   | Restrict to specific project paths                   |
-| `prstory --version` / `--help`       | Standard CLI flags (each subcommand has its own `--help`) |
+| `castory list`                       | Print discovered sessions across all projects        |
+| `castory list --json`                | Same, machine-readable                               |
+| `castory session <id>`               | Render one session as HTML to stdout                 |
+| `castory session <id> --out PATH`    | Write HTML to `PATH`                                 |
+| `castory pr --branch <name>`         | Consolidate sessions on a branch into PR markdown    |
+| `castory pr --branch foo --repo .`   | Look in a specific repo for the branch's commits     |
+| `castory share`                      | Commit this branch's sessions to `.castory/` for reviewers |
+| `castory share --no-commit`          | Stage the files but let the user commit              |
+| `castory share --dry-run`            | Print what would happen, write nothing               |
+| `castory dashboard`                  | Build the dashboard and open it in your browser      |
+| `castory dashboard --out PATH`       | Write the dashboard HTML to `PATH`, don't open       |
+| `castory dashboard --serve`          | Start a local server with auto-refresh               |
+| `castory dashboard --serve --port N` | Start the server on a specific port (auto-increments if busy) |
+| `castory dashboard --projects A,B`   | Restrict to specific project paths                   |
+| `castory --version` / `--help`       | Standard CLI flags (each subcommand has its own `--help`) |
 
 ## What it extracts
 
@@ -116,13 +116,13 @@ preserved verbatim** — those are the highest-signal moments in a session.
 - No network calls in the default codepath. Verify in DevTools: opening the
   dashboard makes **zero** outbound requests.
 - No LLM calls. Summaries are extracted strings from your transcript.
-- Cache lives at `~/.cache/prstory/` — delete it any time.
+- Cache lives at `~/.cache/castory/` — delete it any time.
 
 ## Uninstall
 
 ```sh
-npm uninstall -g prstory
-rm -rf ~/.cache/prstory
+npm uninstall -g castory
+rm -rf ~/.cache/castory
 ```
 
 ## Development

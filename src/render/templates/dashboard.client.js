@@ -3,7 +3,7 @@ export const CLIENT_JS = `
   'use strict';
 
   function parseEmbeddedData() {
-    var el = document.getElementById('prstory-data');
+    var el = document.getElementById('castory-data');
     if (!el) return { sessions: [], projects: [], generated_at: '' };
     try {
       return JSON.parse(el.textContent);
@@ -13,7 +13,7 @@ export const CLIENT_JS = `
   }
 
   function parseEmbeddedFragments() {
-    var el = document.getElementById('prstory-fragments');
+    var el = document.getElementById('castory-fragments');
     if (!el) return {};
     try {
       return JSON.parse(el.textContent);
@@ -228,7 +228,7 @@ export const CLIENT_JS = `
     var branch = s.git_branch || '—';
     var badges = '';
     if (s.shared) {
-      badges += '<span class="badge badge-shared" title="committed to this repo via prstory share">shared</span>';
+      badges += '<span class="badge badge-shared" title="committed to this repo via castory share">shared</span>';
     }
     if ((s.intervention_count || 0) > 0) {
       badges += '<span class="badge badge-int">' + s.intervention_count + ' int</span>';
@@ -283,7 +283,7 @@ export const CLIENT_JS = `
 
   function render() {
     var rows = applyFilters();
-    var statsEl = document.getElementById('prstory-stats');
+    var statsEl = document.getElementById('castory-stats');
     if (statsEl) {
       var totalSec = rows.reduce(function (a, s) { return a + (s.duration_seconds || 0); }, 0);
       var totalTok = rows.reduce(function (a, s) { return a + ((s.tokens && s.tokens.billable) || 0); }, 0);
@@ -294,7 +294,7 @@ export const CLIENT_JS = `
         + (totalFail > 0 ? ' · ' + totalFail + ' ✗' : '')
         + ' · last updated ' + fmtWhen(DATA.generated_at);
     }
-    var list = document.getElementById('prstory-list');
+    var list = document.getElementById('castory-list');
     if (rows.length === 0) {
       list.innerHTML = '<div class="empty">No sessions match these filters.</div>';
       return;
@@ -305,7 +305,7 @@ export const CLIENT_JS = `
   }
 
   function setSelection(idx) {
-    var rows = Array.from(document.querySelectorAll('#prstory-list .session-row'));
+    var rows = Array.from(document.querySelectorAll('#castory-list .session-row'));
     rows.forEach(function (r, i) { r.classList.toggle('selected', i === idx); });
     if (rows[idx]) {
       rows[idx].scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -314,22 +314,22 @@ export const CLIENT_JS = `
   }
 
   function hookListeners() {
-    var search = document.getElementById('prstory-search');
+    var search = document.getElementById('castory-search');
     search.addEventListener('input', debounce(function () {
       STATE.search = search.value.trim();
       render();
     }, 80));
 
-    document.getElementById('prstory-range').addEventListener('change', function (e) {
+    document.getElementById('castory-range').addEventListener('change', function (e) {
       STATE.range = e.target.value; render();
     });
-    document.getElementById('prstory-sort').addEventListener('change', function (e) {
+    document.getElementById('castory-sort').addEventListener('change', function (e) {
       STATE.sort = e.target.value; render();
     });
-    document.getElementById('prstory-project').addEventListener('change', function (e) {
+    document.getElementById('castory-project').addEventListener('change', function (e) {
       STATE.project = e.target.value; render();
     });
-    document.getElementById('prstory-hasint').addEventListener('change', function (e) {
+    document.getElementById('castory-hasint').addEventListener('change', function (e) {
       STATE.hasInt = e.target.checked; render();
     });
 
@@ -342,7 +342,7 @@ export const CLIENT_JS = `
       if (e.key === 'j' || e.key === 'ArrowDown') { e.preventDefault(); setSelection(STATE.selected + 1); }
       if (e.key === 'k' || e.key === 'ArrowUp') { e.preventDefault(); setSelection(Math.max(0, STATE.selected - 1)); }
       if (e.key === 'Enter') {
-        var rows = document.querySelectorAll('#prstory-list .session-row');
+        var rows = document.querySelectorAll('#castory-list .session-row');
         var row = rows[STATE.selected];
         if (row) {
           row.open = !row.open;
@@ -351,14 +351,14 @@ export const CLIENT_JS = `
       }
     });
 
-    document.getElementById('prstory-list').addEventListener('toggle', function (e) {
+    document.getElementById('castory-list').addEventListener('toggle', function (e) {
       if (e.target && e.target.matches('.session-row')) {
         if (e.target.open) loadDetail(e.target);
       }
     }, true);
 
     // Delegated click → jump for any chip with data-jump-* attribute.
-    document.getElementById('prstory-list').addEventListener('click', function (e) {
+    document.getElementById('castory-list').addEventListener('click', function (e) {
       var chip = e.target.closest('[data-jump-tool], [data-jump-mcp], [data-jump-bashcat], [data-jump-skill], [data-jump-agent]');
       if (chip) {
         e.preventDefault();
@@ -389,9 +389,9 @@ export const CLIENT_JS = `
       pane.dataset.loaded = '1';
       return;
     }
-    if (window.__prstory_fetch__) {
+    if (window.__castory_fetch__) {
       pane.innerHTML = '<div class="meta">Loading…</div>';
-      window.__prstory_fetch__(id).then(function (h) {
+      window.__castory_fetch__(id).then(function (h) {
         pane.innerHTML = renderTldrPanel(session) + (h || '<div class="empty">No detail available.</div>');
         pane.dataset.loaded = '1';
       }).catch(function (err) {
@@ -468,7 +468,7 @@ export const CLIENT_JS = `
   }
 
   function setupServeRefresh() {
-    if (!window.__prstory_poll__) return;
+    if (!window.__castory_poll__) return;
     setInterval(function () {
       fetch('/api/index', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (data) {
         if (data && data.generated_at && data.generated_at !== DATA.generated_at) {
@@ -478,14 +478,14 @@ export const CLIENT_JS = `
       }).catch(function () {});
     }, 30000);
 
-    window.__prstory_fetch__ = function (id) {
+    window.__castory_fetch__ = function (id) {
       return fetch('/api/session/' + encodeURIComponent(id), { cache: 'no-store' })
         .then(function (r) { return r.text(); });
     };
   }
 
   function populateProjects() {
-    var sel = document.getElementById('prstory-project');
+    var sel = document.getElementById('castory-project');
     var seen = new Set();
     DATA.projects.forEach(function (p) {
       if (seen.has(p.path)) return;

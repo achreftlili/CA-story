@@ -1,17 +1,17 @@
 {
-  "name": "prstory",
+  "name": "castory",
   "version": "0.1.0",
   "type": "module",
   "description": "Turn Claude Code transcripts into readable PR stories — locally and offline.",
   "license": "MIT",
   "author": "achreftlili",
-  "homepage": "https://github.com/achreftlili/PR-story#readme",
+  "homepage": "https://github.com/achreftlili/CA-story#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/achreftlili/PR-story.git"
+    "url": "git+https://github.com/achreftlili/CA-story.git"
   },
   "bugs": {
-    "url": "https://github.com/achreftlili/PR-story/issues"
+    "url": "https://github.com/achreftlili/CA-story/issues"
   },
   "keywords": [
     "claude-code",
@@ -25,13 +25,13 @@
     "cli"
   ],
   "bin": {
-    "prstory": "./bin/prstory.js"
+    "castory": "./bin/castory.js"
   },
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "start": "node ./bin/prstory.js",
+    "start": "node ./bin/castory.js",
     "test": "node --test test/*.test.js",
     "test:e2e": "node --test test/e2e/*.test.js",
     "prepublishOnly": "npm test"

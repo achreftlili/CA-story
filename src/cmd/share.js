@@ -5,10 +5,10 @@ import { spawn } from 'node:child_process';
 import { findRepoRoot, lastKnownBranch, isGitRepo } from '../util/git.js';
 import { findBranchSessions } from '../discover.js';
 
-const HELP = `prstory share — copy this branch's sessions into the repo so reviewers can see them
+const HELP = `castory share — copy this branch's sessions into the repo so reviewers can see them
 
 Usage:
-  prstory share [--branch NAME] [--repo PATH] [--no-commit] [--dry-run]
+  castory share [--branch NAME] [--repo PATH] [--no-commit] [--dry-run]
 
 Options:
   --branch NAME   Branch to share (default: current HEAD)
@@ -19,11 +19,11 @@ Options:
 
 What it does:
   1. Finds sessions whose recorded git branch matches the target branch
-  2. Copies their raw JSONL into <repo>/.prstory/sessions/<id>.jsonl
-  3. Updates <repo>/.prstory/manifest.json
+  2. Copies their raw JSONL into <repo>/.castory/sessions/<id>.jsonl
+  3. Updates <repo>/.castory/manifest.json
   4. Stages the files and commits them (unless --no-commit)
 
-Reviewers can then run \`prstory dashboard\` in the cloned repo to see
+Reviewers can then run \`castory dashboard\` in the cloned repo to see
 exactly the sessions you ran on this branch.
 
   Transcripts can include anything you pasted into Claude — paths, output,
@@ -58,24 +58,24 @@ export async function run(argv) {
   const startDir = values.repo ? path.resolve(values.repo) : process.cwd();
   const repoRoot = await findRepoRoot(startDir);
   if (!repoRoot || !(await isGitRepo(repoRoot))) {
-    process.stderr.write(`prstory share: not inside a git repo (looked under ${startDir})\n`);
+    process.stderr.write(`castory share: not inside a git repo (looked under ${startDir})\n`);
     return 2;
   }
 
   const branch = values.branch ?? (await lastKnownBranch(repoRoot));
   if (!branch) {
-    process.stderr.write('prstory share: could not determine current branch — pass --branch NAME\n');
+    process.stderr.write('castory share: could not determine current branch — pass --branch NAME\n');
     return 2;
   }
 
   const sessions = await findBranchSessions(branch, repoRoot);
   if (sessions.length === 0) {
-    process.stderr.write(`prstory share: no sessions found for branch '${branch}'\n`);
+    process.stderr.write(`castory share: no sessions found for branch '${branch}'\n`);
     return 1;
   }
 
-  const sharedDir = path.join(repoRoot, '.prstory', 'sessions');
-  const manifestPath = path.join(repoRoot, '.prstory', 'manifest.json');
+  const sharedDir = path.join(repoRoot, '.castory', 'sessions');
+  const manifestPath = path.join(repoRoot, '.castory', 'manifest.json');
 
   if (values['dry-run']) {
     process.stdout.write(`Would share ${sessions.length} session(s) for branch '${branch}':\n`);
@@ -113,32 +113,32 @@ export async function run(argv) {
   const relPaths = [...written, manifestPath].map((p) => path.relative(repoRoot, p));
   const addRes = await gitRun(repoRoot, ['add', '--', ...relPaths]);
   if (!addRes.ok) {
-    process.stderr.write(`prstory share: git add failed:\n${addRes.stderr}`);
+    process.stderr.write(`castory share: git add failed:\n${addRes.stderr}`);
     return 1;
   }
 
   if (values['no-commit']) {
     process.stdout.write(
-      `Staged ${written.length} session(s) for branch '${branch}' under .prstory/. Run \`git commit\` when ready.\n`,
+      `Staged ${written.length} session(s) for branch '${branch}' under .castory/. Run \`git commit\` when ready.\n`,
     );
     return 0;
   }
 
-  const msg = `chore(prstory): share ${written.length} session(s) for ${branch}`;
+  const msg = `chore(castory): share ${written.length} session(s) for ${branch}`;
   const commitRes = await gitRun(repoRoot, ['commit', '-m', msg]);
   if (!commitRes.ok) {
     if (/nothing to commit/i.test(commitRes.stdout + commitRes.stderr)) {
       process.stdout.write(
-        `prstory share: nothing changed; .prstory/ is already up to date for '${branch}'.\n`,
+        `castory share: nothing changed; .castory/ is already up to date for '${branch}'.\n`,
       );
       return 0;
     }
-    process.stderr.write(`prstory share: git commit failed:\n${commitRes.stderr}`);
+    process.stderr.write(`castory share: git commit failed:\n${commitRes.stderr}`);
     return 1;
   }
 
   process.stdout.write(
-    `Shared ${written.length} session(s) for '${branch}' to .prstory/ and committed.\nNext: \`git push\`.\n`,
+    `Shared ${written.length} session(s) for '${branch}' to .castory/ and committed.\nNext: \`git push\`.\n`,
   );
   return 0;
 }

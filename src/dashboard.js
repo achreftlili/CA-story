@@ -85,7 +85,7 @@ export async function buildIndex({
         entry.key = k;
         cache.entries[loc.sessionId] = entry;
       } catch (err) {
-        process.stderr.write(`prstory: skipping ${loc.path}: ${err.message}\n`);
+        process.stderr.write(`castory: skipping ${loc.path}: ${err.message}\n`);
         return;
       }
     }

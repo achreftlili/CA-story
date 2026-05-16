@@ -11,10 +11,10 @@ import { openInBrowser } from '../util/open.js';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const HELP = `prstory pr — render PR consolidation
+const HELP = `castory pr — render PR consolidation
 
 Usage:
-  prstory pr --branch <name> [--repo PATH] [--out PATH] [--html] [--open]
+  castory pr --branch <name> [--repo PATH] [--out PATH] [--html] [--open]
 
 Options:
   --branch NAME   Git branch to consolidate sessions for (required)
@@ -41,7 +41,7 @@ export async function run(argv) {
   }
 
   if (!values.branch) {
-    process.stderr.write('prstory pr: --branch is required\n\n' + HELP);
+    process.stderr.write('castory pr: --branch is required\n\n' + HELP);
     return 2;
   }
 
@@ -50,7 +50,7 @@ export async function run(argv) {
   if (values.html) {
     const story = await buildPrStory({ branch: values.branch, repoPath: repo });
     if (story.session_ids.length === 0) {
-      process.stderr.write(`prstory pr: no sessions found for branch '${values.branch}' in ${repo}\n`);
+      process.stderr.write(`castory pr: no sessions found for branch '${values.branch}' in ${repo}\n`);
       return 1;
     }
     const html = renderPrHtml(story);
@@ -68,7 +68,7 @@ export async function run(argv) {
   // Markdown path (preserved from previous behavior).
   const sessions = await findBranchSessions(values.branch, repo);
   if (sessions.length === 0) {
-    process.stderr.write(`prstory pr: no sessions found for branch '${values.branch}' in ${repo}\n`);
+    process.stderr.write(`castory pr: no sessions found for branch '${values.branch}' in ${repo}\n`);
     return 1;
   }
   const timelines = [];

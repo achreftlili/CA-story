@@ -12,7 +12,7 @@ import { run as runPr } from '../src/cmd/pr.js';
 const FIX = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures');
 
 async function setupRoot() {
-  const root = await mkdtemp(path.join(tmpdir(), 'prstory-int-'));
+  const root = await mkdtemp(path.join(tmpdir(), 'castory-int-'));
   const projectDir = path.join(root, '-repo-foo');
   await cp(FIX, projectDir, { recursive: true });
   return root;
@@ -21,7 +21,7 @@ async function setupRoot() {
 async function withFakeHome(root, fn) {
   // Redirect ~/.claude/projects to our fixture root + ~/.cache to a tmp dir
   // by setting HOME — `os.homedir()` honors $HOME on POSIX.
-  const fakeHome = await mkdtemp(path.join(tmpdir(), 'prstory-home-'));
+  const fakeHome = await mkdtemp(path.join(tmpdir(), 'castory-home-'));
   const dest = path.join(fakeHome, '.claude', 'projects');
   await cp(root, dest, { recursive: true });
   const prevHome = process.env.HOME;
@@ -43,8 +43,8 @@ test('integration: dashboard --out writes a self-contained HTML', async () => {
       const code = await runDashboard(['--out', outFile, '--no-open']);
       assert.equal(code, 0);
       const html = await readFile(outFile, 'utf8');
-      assert.match(html, /<title>prstory dashboard<\/title>/);
-      assert.match(html, /id="prstory-data"/);
+      assert.match(html, /<title>castory dashboard<\/title>/);
+      assert.match(html, /id="castory-data"/);
       // All 5 fixture session ids should appear in the embedded JSON.
       for (const id of ['sess-basic', 'sess-cont', 'sess-fork', 'sess-trunc', 'sess-xss']) {
         assert.match(html, new RegExp(id), `${id} should be embedded`);

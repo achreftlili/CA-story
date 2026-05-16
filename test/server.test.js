@@ -9,20 +9,20 @@ import { startServer } from '../src/server.js';
 const FIX = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures');
 
 async function setup() {
-  const root = await mkdtemp(path.join(tmpdir(), 'prstory-srv-'));
+  const root = await mkdtemp(path.join(tmpdir(), 'castory-srv-'));
   await cp(FIX, path.join(root, '-repo-foo'), { recursive: true });
   return root;
 }
 
-test('server: GET / returns the dashboard shell with prstory-data', async () => {
+test('server: GET / returns the dashboard shell with castory-data', async () => {
   const root = await setup();
   const srv = await startServer({ projectsRoot: root, projectPaths: null, port: 0 });
   try {
     const res = await fetch(srv.url);
     assert.equal(res.status, 200);
     const html = await res.text();
-    assert.match(html, /<title>prstory dashboard<\/title>/);
-    assert.match(html, /id="prstory-data"/);
+    assert.match(html, /<title>castory dashboard<\/title>/);
+    assert.match(html, /id="castory-data"/);
   } finally {
     await srv.close();
     await rm(root, { recursive: true, force: true });
