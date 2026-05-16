@@ -2,6 +2,8 @@
 
 Turn Claude Code transcripts into readable PR stories — locally.
 
+![castory dashboard](docs/dashboard.png)
+
 `castory` reads the JSONL transcripts that Claude Code already writes to
 `~/.claude/projects/` and renders three views over them:
 
