@@ -17,14 +17,16 @@ All processing happens on your machine. There are **no network calls** and
 ## Install
 
 ```sh
-npm install -g @achreftlili/castory
+npm install -g coding-agent-story
 ```
 
 Or run with no install:
 
 ```sh
-npx @achreftlili/castory@latest dashboard
+npx coding-agent-story@latest dashboard
 ```
+
+After install, the CLI command is `castory` (short name kept for ergonomics).
 
 Requires Node ≥ 20.
 
@@ -123,7 +125,7 @@ preserved verbatim** — those are the highest-signal moments in a session.
 ## Uninstall
 
 ```sh
-npm uninstall -g @achreftlili/castory
+npm uninstall -g coding-agent-story
 rm -rf ~/.cache/castory
 ```
 

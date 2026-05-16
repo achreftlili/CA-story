@@ -1,9 +1,6 @@
 {
-  "name": "@achreftlili/castory",
+  "name": "coding-agent-story",
   "version": "0.1.0",
-  "publishConfig": {
-    "access": "public"
-  },
   "type": "module",
   "description": "Turn Claude Code transcripts into readable PR stories — locally and offline.",
   "license": "MIT",
