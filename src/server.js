@@ -1,12 +1,13 @@
 import { createServer } from 'node:http';
 import { buildIndex } from './dashboard.js';
-import { findSessionById } from './discover.js';
+import { findSessionById, findSharedSessionById } from './discover.js';
 import { parseSession } from './parse.js';
 import { extractEvents } from './extract.js';
 import { buildTimeline } from './timeline.js';
 import { renderDashboardHtml } from './render/dashboard-html.js';
 import { renderTimelineBody } from './render/session-html.js';
 import { findRepoRoot, getOriginUrl, githubWebBase } from './util/git.js';
+import { readClaudeMdConfig } from './util/claude-md.js';
 
 const DEFAULT_PORT = 7842;
 const PORT_TRIES = 50;
@@ -19,11 +20,12 @@ export async function startServer(opts) {
   const startPort = opts.port ?? DEFAULT_PORT;
   const projectsRoot = opts.projectsRoot;
   const projectPaths = opts.projectPaths ?? null;
+  const repoRoot = opts.repoRoot ?? null;
 
   const fragmentCache = new Map();
 
   async function freshIndex() {
-    return buildIndex({ projectsRoot, projectPaths });
+    return buildIndex({ projectsRoot, projectPaths, repoRoot });
   }
 
   async function renderShell() {
@@ -34,15 +36,20 @@ export async function startServer(opts) {
   async function fragmentFor(sessionId) {
     const cached = fragmentCache.get(sessionId);
     if (cached) return cached;
-    const loc = await findSessionById(sessionId, projectsRoot);
+    let loc = await findSessionById(sessionId, projectsRoot);
+    if (!loc && repoRoot) {
+      loc = await findSharedSessionById(sessionId, repoRoot);
+    }
     if (!loc) return null;
     const { events } = await parseSession(loc.path);
     const evs = extractEvents({ events });
     const gitBranch = events.find((e) => e.gitBranch)?.gitBranch ?? null;
     const cwd = events.find((e) => e.cwd)?.cwd ?? null;
-    const repoRoot = cwd ? await findRepoRoot(cwd) : null;
-    const githubBase = repoRoot ? githubWebBase(await getOriginUrl(repoRoot)) : null;
-    const timeline = buildTimeline(evs, { sessionId, gitBranch, githubBase, repoRoot });
+    const sessionRepoRoot = cwd ? await findRepoRoot(cwd) : null;
+    const githubBase = sessionRepoRoot ? githubWebBase(await getOriginUrl(sessionRepoRoot)) : null;
+    const cmd = (await readClaudeMdConfig(cwd)) ?? (sessionRepoRoot ? await readClaudeMdConfig(sessionRepoRoot) : null);
+    const importantFiles = cmd?.important_files ?? [];
+    const timeline = buildTimeline(evs, { sessionId, gitBranch, githubBase, repoRoot: sessionRepoRoot, importantFiles });
     const body = renderTimelineBody(timeline);
     fragmentCache.set(sessionId, body);
     return body;

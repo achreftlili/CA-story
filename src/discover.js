@@ -66,6 +66,46 @@ export async function findSessionById(sessionId, root = claudeProjectsRoot()) {
   return null;
 }
 
+// Walk `<repoRoot>/.prstory/sessions/*.jsonl`. These are JSONL files committed
+// to the repo by `prstory share` so reviewers can render the author's sessions
+// locally via `prstory dashboard`. Yields nothing if the dir doesn't exist.
+export async function* listSharedSessions(repoRoot) {
+  if (!repoRoot) return;
+  const sharedDir = path.join(repoRoot, '.prstory', 'sessions');
+  let files;
+  try {
+    files = await readdir(sharedDir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const f of files) {
+    if (!f.isFile() || !f.name.endsWith('.jsonl')) continue;
+    const fp = path.join(sharedDir, f.name);
+    let st;
+    try {
+      st = await stat(fp);
+    } catch {
+      continue;
+    }
+    yield {
+      sessionId: f.name.replace(/\.jsonl$/, ''),
+      path: fp,
+      projectDir: sharedDir,
+      cwdGuess: null,
+      mtimeMs: st.mtimeMs,
+      sizeBytes: st.size,
+      shared: true,
+    };
+  }
+}
+
+export async function findSharedSessionById(sessionId, repoRoot) {
+  for await (const s of listSharedSessions(repoRoot)) {
+    if (s.sessionId === sessionId) return s;
+  }
+  return null;
+}
+
 // Pull the first two timestamps and any cwd from a JSONL by reading at most
 // the first ~40 lines. Used for cheap discovery filters without parsing the
 // full session.

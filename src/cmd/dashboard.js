@@ -12,6 +12,7 @@ import {
 } from '../util/paths.js';
 import { startServer } from '../server.js';
 import { openInBrowser } from '../util/open.js';
+import { findRepoRoot } from '../util/git.js';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -48,10 +49,11 @@ export async function run(argv) {
     ? values.projects.split(',').map((s) => s.trim()).filter(Boolean)
     : null;
   const projectsRoot = claudeProjectsRoot();
+  const repoRoot = await findRepoRoot(process.cwd());
 
   if (values.serve) {
     const port = values.port ? Number(values.port) : 7842;
-    const srv = await startServer({ projectsRoot, projectPaths, port });
+    const srv = await startServer({ projectsRoot, projectPaths, repoRoot, port });
     process.stdout.write(`prstory: serving at ${srv.url}\n`);
     if (!values['no-open']) await openInBrowser(srv.url);
     await new Promise((resolve) => {
@@ -65,7 +67,7 @@ export async function run(argv) {
     return 0;
   }
 
-  const index = await buildIndex({ projectsRoot, projectPaths });
+  const index = await buildIndex({ projectsRoot, projectPaths, repoRoot });
 
   // Build per-session fragments for inline expansion (so file:// works
   // without fetch). Also write standalone session HTML files so users can
@@ -92,10 +94,22 @@ export async function run(argv) {
         gitBranch: s.git_branch,
         githubBase: s.github_base,
         repoRoot: s.repo_root,
+        importantFiles: s.important_files,
       });
       fragments[s.id] = renderTimelineBody(timeline);
       const standalone = renderSessionHtml(timeline, {
-        meta: { cwdGuess: s.project_path, projectDir: '' },
+        meta: {
+          cwdGuess: s.project_path,
+          projectDir: '',
+          displayName: s.project_name,
+          tokens: s.tokens,
+          toolCalls: s.tool_calls,
+          mcpTools: s.mcp_tools,
+          bashCategories: s.bash_categories,
+          slashCommands: s.slash_commands,
+          skillsUsed: s.skills_used,
+          subagentsUsed: s.subagents_used,
+        },
       });
       await writeFile(path.join(sessionsDir, `${s.id}.html`), standalone, 'utf8');
     } catch (err) {

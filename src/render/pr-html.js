@@ -117,10 +117,27 @@ const PR_CSS = `
 `;
 
 function renderTotals(t) {
+  const tk = t.tokens;
+  const tokPill = tk ? `<span class="totals-pill" title="${escapeHtml(tokenTooltip(tk))}">${fmtTokens(tk.billable)} tokens</span>` : '';
   return `<span class="totals-pill">${t.sessions} sessions</span>` +
     `<span class="totals-pill">${t.edits} edits</span>` +
     `<span class="totals-pill">${t.decisions} decisions</span>` +
-    `<span class="totals-pill">${t.interventions} interventions</span>`;
+    `<span class="totals-pill">${t.interventions} interventions</span>` +
+    tokPill;
+}
+
+function fmtTokens(n) {
+  n = +n || 0;
+  if (n === 0) return '—';
+  if (n < 1000) return String(n);
+  if (n < 1e6) return (n / 1000).toFixed(n < 10000 ? 1 : 0) + 'k';
+  return (n / 1e6).toFixed(1) + 'M';
+}
+
+function tokenTooltip(t) {
+  return `in: ${(t.input||0).toLocaleString()} · out: ${(t.output||0).toLocaleString()}` +
+    ` · cache_read: ${(t.cache_read||0).toLocaleString()} · cache_create: ${(t.cache_creation||0).toLocaleString()}` +
+    ` · billable: ${(t.billable||0).toLocaleString()}`;
 }
 
 function renderPrLink(story) {
@@ -249,10 +266,15 @@ function renderFileEdits(f, ctx) {
     const diff = renderActionDiff(a);
     const meta = a.meta ?? {};
     const stamp = a.timestamp ? `<span class="meta" style="margin-left:auto">${escapeHtml(a.timestamp.slice(0,16).replace('T',' '))}</span>` : '';
+    const t = meta.turn_tokens;
+    const tokChip = t
+      ? `<span class="turn-tok" title="in: ${(t.input||0).toLocaleString()} · out: ${(t.output||0).toLocaleString()} · cache_read: ${(t.cache_read||0).toLocaleString()} · cache_create: ${(t.cache_creation||0).toLocaleString()} · billable: ${(t.billable||0).toLocaleString()}">⛁ ${fmtTokens(t.billable)}</span>`
+      : '';
     return `<li class="action" style="display:flex; flex-direction:column;">
       <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <span class="tool-name">${escapeHtml(meta.tool_name ?? 'Action')}</span>
         ${alignBadge}
+        ${tokChip}
         ${stamp}
       </div>
       ${diff}

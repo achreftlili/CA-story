@@ -13,6 +13,7 @@ Commands:
   list                          Discovered sessions across all projects
   session <id>                  Render one session as HTML
   pr --branch <name>            Render PR consolidation
+  share                         Commit this branch's sessions to the repo
   dashboard                     Build + open the dashboard
   dashboard --serve [--port N]  Local server with auto-refresh
 
@@ -49,6 +50,8 @@ export async function main(argv) {
       return (await import('./cmd/session.js')).run(rest);
     case 'pr':
       return (await import('./cmd/pr.js')).run(rest);
+    case 'share':
+      return (await import('./cmd/share.js')).run(rest);
     case 'dashboard':
       return (await import('./cmd/dashboard.js')).run(rest);
     default:

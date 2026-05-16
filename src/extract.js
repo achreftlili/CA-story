@@ -40,6 +40,7 @@ export function extractEvents(parsed) {
     if (ev.kind === 'assistant') {
       const text = messageText(ev).trim();
       const tools = messageToolUses(ev);
+      const turnTokens = readTurnTokens(ev);
 
       // Detect forks first — they affect subsequent intervention classification.
       let isFork = false;
@@ -70,6 +71,7 @@ export function extractEvents(parsed) {
         if (t.name === 'Write' && typeof input.content === 'string') {
           meta.new_string = clip(input.content, 800);
         }
+        if (turnTokens) meta.turn_tokens = turnTokens;
         const summary = describeTool(t);
         out.push(makeEvent('action', summary, sid, ts, off, meta));
       }
@@ -136,6 +138,23 @@ function makeEvent(type, raw_text, session_id, timestamp, line_offset, meta) {
 function clip(s, n) {
   if (s.length <= n) return s;
   return s.slice(0, n) + `\n… (${s.length - n} more chars)`;
+}
+
+function readTurnTokens(ev) {
+  const u = ev.raw?.message?.usage;
+  if (!u || typeof u !== 'object') return null;
+  const input = +(u.input_tokens || 0);
+  const output = +(u.output_tokens || 0);
+  const cache_read = +(u.cache_read_input_tokens || 0);
+  const cache_creation = +(u.cache_creation_input_tokens || 0);
+  return {
+    input,
+    output,
+    cache_read,
+    cache_creation,
+    billable: input + output + cache_creation,
+    message_id: ev.raw?.message?.id ?? null,
+  };
 }
 
 function describeTool(toolUse) {

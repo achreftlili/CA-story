@@ -154,12 +154,36 @@ export async function buildPrStory({ branch, repoPath, projectsRoot }) {
   );
   const allInterventions = timelines.flatMap((tl) => tl.chapters.flatMap((c) => c.interventions));
 
+  // Sum token usage across all assistant messages on the branch, deduped
+  // by message.id (the JSONL splits one turn into multiple records that
+  // all carry the same `usage`).
+  const tokens = { input: 0, output: 0, cache_read: 0, cache_creation: 0, assistant_messages: 0 };
+  const seenMsgIds = new Set();
+  for (const s of sessions) {
+    const raw = await parseSession(s.path);
+    for (const e of raw.events) {
+      if (e.kind !== 'assistant') continue;
+      const u = e.raw?.message?.usage;
+      const mid = e.raw?.message?.id;
+      if (!u || !mid || seenMsgIds.has(mid)) continue;
+      seenMsgIds.add(mid);
+      tokens.input += +(u.input_tokens || 0);
+      tokens.output += +(u.output_tokens || 0);
+      tokens.cache_read += +(u.cache_read_input_tokens || 0);
+      tokens.cache_creation += +(u.cache_creation_input_tokens || 0);
+      tokens.assistant_messages++;
+    }
+  }
+  tokens.total = tokens.input + tokens.output + tokens.cache_read + tokens.cache_creation;
+  tokens.billable = tokens.input + tokens.output + tokens.cache_creation;
+
   const totals = {
     sessions: sessions.length,
     actions: allEvents.filter((e) => e.type === 'action').length,
     edits: allEvents.filter((e) => e.type === 'action' && (e.meta?.tool_name === 'Edit' || e.meta?.tool_name === 'Write' || e.meta?.tool_name === 'MultiEdit')).length,
     decisions: allDecisions.length,
     interventions: allInterventions.length,
+    tokens,
   };
 
   return {

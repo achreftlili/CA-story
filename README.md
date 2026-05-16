@@ -14,27 +14,24 @@ All processing happens on your machine. There are **no network calls** and
 
 ## Install
 
-Recommended — install globally from a checkout:
-
 ```sh
-git clone <this-repo> prstory && cd prstory
-npm install -g .
+npm install -g prstory
 ```
 
-Or run without installing (once published):
+Or run with no install:
 
 ```sh
-npx prstory dashboard
+npx prstory@latest dashboard
 ```
+
+Requires Node ≥ 20.
 
 For development against the source tree, use `npm link`:
 
 ```sh
-cd prstory && npm link
-# `prstory` now resolves to your working copy
+git clone https://github.com/achreftlili/PR-story.git prstory && cd prstory
+npm link    # `prstory` now resolves to your working copy
 ```
-
-Requires Node ≥ 20.
 
 ## Quick start
 
@@ -43,8 +40,40 @@ prstory dashboard           # build + open in your browser
 prstory list                # plain-text list of every session
 prstory session <id>        # render a single session as HTML
 prstory pr --branch foo     # consolidate sessions on a branch into a PR
+prstory share               # commit this branch's sessions for reviewers
 prstory dashboard --serve   # local server with 30s auto-refresh
 ```
+
+## Share sessions with reviewers
+
+When you open a PR, reviewers usually only see the diff. With `prstory share`
+you can commit the Claude sessions that produced the diff to the branch, so
+anyone reviewing can replay the work locally:
+
+```sh
+# On the author's machine, with the feature branch checked out:
+prstory share              # copies branch sessions → .prstory/sessions/<id>.jsonl
+                           # writes .prstory/manifest.json
+                           # stages + commits the files
+git push
+```
+
+Then on the reviewer's machine, after pulling the branch:
+
+```sh
+prstory dashboard          # auto-discovers .prstory/sessions in the repo
+                           # branch sessions show up with a "shared" badge
+```
+
+Useful flags:
+
+- `--branch NAME` — share a branch other than the current HEAD
+- `--no-commit` — copy + stage but let the user do the commit
+- `--dry-run` — print what would happen, write nothing
+
+> **Heads-up on privacy.** Claude transcripts can contain anything you pasted —
+> file paths, command output, secrets, internal-only context. Open the staged
+> JSONL files before pushing to a public repo.
 
 ## Commands
 
@@ -56,6 +85,9 @@ prstory dashboard --serve   # local server with 30s auto-refresh
 | `prstory session <id> --out PATH`    | Write HTML to `PATH`                                 |
 | `prstory pr --branch <name>`         | Consolidate sessions on a branch into PR markdown    |
 | `prstory pr --branch foo --repo .`   | Look in a specific repo for the branch's commits     |
+| `prstory share`                      | Commit this branch's sessions to `.prstory/` for reviewers |
+| `prstory share --no-commit`          | Stage the files but let the user commit              |
+| `prstory share --dry-run`            | Print what would happen, write nothing               |
 | `prstory dashboard`                  | Build the dashboard and open it in your browser      |
 | `prstory dashboard --out PATH`       | Write the dashboard HTML to `PATH`, don't open       |
 | `prstory dashboard --serve`          | Start a local server with auto-refresh               |

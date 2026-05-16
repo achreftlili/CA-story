@@ -22,11 +22,13 @@ export async function alignActions(actions, ctx) {
   const inDiff = new Set();
   let diffComputed = false;
 
-  if (ctx.repoRoot && ctx.base) {
+  if (ctx.repoRoot && ctx.base && ctx.base !== ctx.head) {
     try {
       const files = await diffFiles(ctx.base, ctx.head, ctx.repoRoot);
       for (const f of files) inDiff.add(path.join(ctx.repoRoot, f));
-      diffComputed = true;
+      // Only treat the diff as authoritative when it actually returned
+      // files; an empty diff usually means no meaningful range.
+      diffComputed = inDiff.size > 0;
     } catch {
       // fallthrough — keep all as unknown vs-in-pr
     }

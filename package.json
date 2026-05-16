@@ -2,7 +2,28 @@
   "name": "prstory",
   "version": "0.1.0",
   "type": "module",
-  "description": "Turn Claude Code transcripts into readable PR stories",
+  "description": "Turn Claude Code transcripts into readable PR stories — locally and offline.",
+  "license": "MIT",
+  "author": "achreftlili",
+  "homepage": "https://github.com/achreftlili/PR-story#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achreftlili/PR-story.git"
+  },
+  "bugs": {
+    "url": "https://github.com/achreftlili/PR-story/issues"
+  },
+  "keywords": [
+    "claude-code",
+    "claude",
+    "anthropic",
+    "transcripts",
+    "pr",
+    "pull-request",
+    "code-review",
+    "dashboard",
+    "cli"
+  ],
   "bin": {
     "prstory": "./bin/prstory.js"
   },
@@ -12,12 +33,14 @@
   "scripts": {
     "start": "node ./bin/prstory.js",
     "test": "node --test test/*.test.js",
-    "test:e2e": "node --test test/e2e/*.test.js"
+    "test:e2e": "node --test test/e2e/*.test.js",
+    "prepublishOnly": "npm test"
   },
   "files": [
     "bin/",
     "src/",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "dependencies": {},
   "devDependencies": {
